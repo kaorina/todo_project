@@ -232,6 +232,7 @@
             const todoItem = button.closest('.todo-item');
             todoItem.classList.add('editing');
             const input = todoItem.querySelector('.todo-input');
+            input.value = todoItem.querySelector('.todo-text').textContent;
             input.focus();
         }
 
@@ -241,16 +242,25 @@
             const input = todoItem.querySelector('.todo-input');
             const title = input.value.trim();
             
-            if (!title) return;
+            if (!title) {
+                alert('タイトルを入力してください');
+                return;
+            }
 
             try {
-                await fetch(`${API_URL}${id}/`, getRequestOptions('PATCH', {
+                const response = await fetch(`${API_URL}${id}/`, getRequestOptions('PATCH', {
                     title: title
                 }));
+                
+                if (!response.ok) {
+                    throw new Error('更新に失敗しました');
+                }
+                
                 todoItem.classList.remove('editing');
-                fetchTodos();
+                await fetchTodos();
             } catch (error) {
                 console.error('Error updating todo:', error);
+                alert('更新に失敗しました: ' + error.message);
             }
         }
 
