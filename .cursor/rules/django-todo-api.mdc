@@ -1,0 +1,34 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Django Todoアプリ構造とAPIフロー
+
+このプロジェクトはDjangoとDjango REST Frameworkを用いたTodo管理アプリです。
+
+## 主要ファイルと役割
+
+- [todos/models.py](mdc:todos/models.py): Todoモデル（title, completed, created_at, user）を定義。
+- [todos/serializers.py](mdc:todos/serializers.py): Todoモデルのシリアライザー。APIでやり取りするデータ形式を定義。
+- [todos/views.py](mdc:todos/views.py): `TodoViewSet`でCRUD APIエンドポイントを実装。`index`ビューでトップページを表示。
+- [todos/urls.py](mdc:todos/urls.py): `DefaultRouter`で`/api/todos/`以下のRESTful APIルートを自動生成。
+- [todos/templates/todos/index.html](mdc:todos/templates/todos/index.html): フロントエンド。JavaScriptでAPIを呼び出し、TodoのCRUD操作を実現。
+- [config/urls.py](mdc:config/urls.py): プロジェクト全体のURLルーティング。APIや認証、トップページのルートを定義。
+
+## APIフロー
+
+1. フロントエンド（index.html）のJavaScriptが`/api/todos/`エンドポイントにリクエストを送信。
+2. [todos/views.py](mdc:todos/views.py)の`TodoViewSet`がリクエストを受け、[todos/serializers.py](mdc:todos/serializers.py)でデータをシリアライズ/デシリアライズ。
+3. [todos/models.py](mdc:todos/models.py)のTodoモデルを操作し、結果をJSONで返す。
+
+## ルーティングの特徴
+
+- APIルートは`/api/todos/`（一覧・作成）、`/api/todos/<id>/`（詳細・更新・削除）
+- 認証はDjangoのセッション認証を利用
+- ルーティングの詳細は[config/urls.py](mdc:config/urls.py)と[todos/urls.py](mdc:todos/urls.py)を参照
+
+## 備考
+
+- CRUD操作はすべてAPI経由で行われ、ページ遷移なしでリストが更新されるSPA的な構成
+- Django REST FrameworkのViewSetとRouterを活用し、API設計がシンプル
