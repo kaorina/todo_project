@@ -7,35 +7,59 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4CAF50;
+            --danger-color: #ff4444;
+            --text-color: #333;
+            --border-color: #ddd;
+            --background-color: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
+
         .container {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
         h1 {
-            color: #333;
+            color: var(--text-color);
             text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
         }
+
         .user-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
             padding: 10px 0;
+            flex-wrap: wrap;
+            gap: 10px;
         }
+
         .user-info span {
             font-weight: bold;
         }
+
         .logout-button {
-            background-color: #ff4444;
+            background-color: var(--danger-color);
             color: white;
             padding: 8px 16px;
             border: none;
@@ -45,98 +69,188 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.9rem;
         }
+
         .logout-button i {
             font-size: 14px;
         }
+
         .logout-button:hover {
             background-color: #ff0000;
         }
+
         .todo-form {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
+
         .todo-form input[type="text"] {
             flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
+            min-width: 200px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 1rem;
         }
+
         .todo-form button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1rem;
+            white-space: nowrap;
         }
+
         .todo-list {
             list-style: none;
             padding: 0;
         }
+
         .todo-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+            flex-wrap: wrap;
         }
+
         .todo-item:last-child {
             border-bottom: none;
         }
+
         .todo-item input[type="checkbox"] {
-            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            margin: 0;
         }
+
         .todo-item.completed span {
             text-decoration: line-through;
             color: #888;
         }
+
         .todo-item .todo-text {
-            flex-grow: 1;
-            margin-right: 10px;
+            flex: 1;
+            min-width: 200px;
+            font-size: 1rem;
+            word-break: break-word;
         }
+
         .todo-item .todo-input {
-            flex-grow: 1;
-            margin-right: 10px;
-            padding: 5px;
-            border: 1px solid #ddd;
+            flex: 1;
+            min-width: 200px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
+            font-size: 1rem;
             display: none;
         }
+
         .todo-item.editing .todo-text {
             display: none;
         }
+
         .todo-item.editing .todo-input {
             display: block;
         }
+
         .todo-actions {
             display: flex;
             gap: 5px;
+            flex-wrap: wrap;
         }
+
         .todo-actions button {
-            padding: 4px 8px;
+            padding: 8px 12px;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
+
         .edit-button {
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
         }
+
         .save-button {
             background-color: #2196F3;
             display: none;
         }
+
         .todo-item.editing .edit-button {
             display: none;
         }
+
         .todo-item.editing .save-button {
-            display: block;
+            display: flex;
         }
+
         .delete-button {
-            background-color: #ff4444;
+            background-color: var(--danger-color);
+        }
+
+        /* モバイル対応のメディアクエリ */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .todo-form {
+                flex-direction: column;
+            }
+
+            .todo-form input[type="text"] {
+                width: 100%;
+            }
+
+            .todo-form button {
+                width: 100%;
+            }
+
+            .todo-item {
+                padding: 10px;
+            }
+
+            .todo-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .todo-actions button {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        /* タッチデバイス向けの最適化 */
+        @media (hover: none) {
+            .todo-actions button {
+                padding: 12px;
+            }
+
+            .todo-item input[type="checkbox"] {
+                width: 24px;
+                height: 24px;
+            }
         }
     </style>
 </head>
