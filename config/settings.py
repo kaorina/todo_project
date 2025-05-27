@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +25,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)g=bmwr27jzg!gfd(3+^u3sg#$j@)l0@pwoozumd2=!yab@!3*'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_ENV') == 'development'
 
-ALLOWED_HOSTS = []
+# 本番環境の場合はALLOWED_HOSTSを設定
+if not DEBUG:
+    # 本番環境では、環境変数からALLOWED_HOSTSを取得
+    # 例: DJANGO_ALLOWED_HOSTS=example.com,www.example.com
+    ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
+else:
+    # 開発環境では、localhostと127.0.0.1を許可（ポート番号付きも含む）
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost:8000', '127.0.0.1:8000']
 
 
 # Application definition
