@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4CAF50;
-            --danger-color: #ff4444;
+            --primary-color: #43a047;   /* 濃いめのパステルグリーン */
+            --danger-color: #e53935;    /* 濃いめのパステルレッド */
+            --save-color: #1e88e5;      /* 濃いめのパステルブルー */
+            --warning-color: #ff9800;
             --text-color: #333;
             --border-color: #ddd;
             --background-color: #f5f5f5;
@@ -77,7 +79,7 @@
         }
 
         .logout-button:hover {
-            background-color: #ff0000;
+            background-color: #b71c1c;
         }
 
         .todo-form {
@@ -87,13 +89,21 @@
             flex-wrap: wrap;
         }
 
-        .todo-form input[type="text"] {
-            flex: 1;
-            min-width: 200px;
+        .todo-form input[type="text"],
+        .todo-form input[type="datetime-local"] {
             padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 1rem;
+        }
+
+        .todo-form input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .todo-form input[type="datetime-local"] {
+            min-width: 200px;
         }
 
         .todo-form button {
@@ -153,11 +163,21 @@
             display: none;
         }
 
+        .todo-item .todo-due-date-input {
+            min-width: 200px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            display: none;
+        }
+
         .todo-item.editing .todo-text {
             display: none;
         }
 
-        .todo-item.editing .todo-input {
+        .todo-item.editing .todo-input,
+        .todo-item.editing .todo-due-date-input {
             display: block;
         }
 
@@ -184,7 +204,7 @@
         }
 
         .save-button {
-            background-color: #2196F3;
+            background-color: var(--save-color);
             display: none;
         }
 
@@ -198,6 +218,21 @@
 
         .delete-button {
             background-color: var(--danger-color);
+        }
+
+        .due-date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .due-date.overdue {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        .due-date.upcoming {
+            color: var(--warning-color);
         }
 
         /* モバイル対応のメディアクエリ */
@@ -218,7 +253,8 @@
                 flex-direction: column;
             }
 
-            .todo-form input[type="text"] {
+            .todo-form input[type="text"],
+            .todo-form input[type="datetime-local"] {
                 width: 100%;
             }
 
@@ -269,6 +305,7 @@
         </div>
         <div class="todo-form">
             <input type="text" id="new-todo" placeholder="新しいTODOを入力">
+            <input type="datetime-local" id="new-due-date">
             <button onclick="addTodo()">追加</button>
         </div>
         <ul class="todo-list" id="todo-list"></ul>
@@ -306,6 +343,41 @@
             return options;
         }
 
+        // 期日の表示形式を整形
+        function formatDueDate(dueDate) {
+            if (!dueDate) return '';
+            const date = new Date(dueDate);
+            return date.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 期日の状態を判定
+        function getDueDateStatus(dueDate) {
+            if (!dueDate) return '';
+            const now = new Date();
+            const due = new Date(dueDate);
+            const diffHours = (due - now) / (1000 * 60 * 60);
+            
+            if (diffHours < 0) return 'overdue';
+            if (diffHours < 24) return 'upcoming';
+            return '';
+        }
+
+        /**
+         * サーバーから返ってきたISO8601形式の日時文字列（例: 2025-05-27T13:00:00+09:00）
+         * から、datetime-local input用の値（YYYY-MM-DDTHH:mm）を抽出して返す。
+         * タイムゾーン補正は行わず、文字列の先頭16文字をそのまま返す。
+         */
+        function toDatetimeLocal(dt) {
+            if (!dt) return '';
+            return dt.slice(0, 16);
+        }
+
         // TODOリストを取得して表示
         async function fetchTodos() {
             try {
@@ -317,11 +389,20 @@
                 todos.forEach(todo => {
                     const li = document.createElement('li');
                     li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                    
+                    const dueDateStatus = getDueDateStatus(todo.due_date);
+                    const dueDateHtml = todo.due_date ? 
+                        `<span class="due-date ${dueDateStatus}">
+                            <i class="far fa-clock"></i> ${formatDueDate(todo.due_date)}
+                        </span>` : '';
+
                     li.innerHTML = `
                         <input type="checkbox" ${todo.completed ? 'checked' : ''} 
                                onchange="toggleTodo(${todo.id}, this.checked)">
                         <span class="todo-text">${todo.title}</span>
+                        ${dueDateHtml}
                         <input type="text" class="todo-input" value="${todo.title}">
+                        <input type="datetime-local" class="todo-due-date-input" value="${toDatetimeLocal(todo.due_date)}">
                         <div class="todo-actions">
                             <button class="edit-button" onclick="startEdit(this)">
                                 <i class="fas fa-edit"></i> 編集
@@ -346,7 +427,13 @@
             const todoItem = button.closest('.todo-item');
             todoItem.classList.add('editing');
             const input = todoItem.querySelector('.todo-input');
+            const dueDateInput = todoItem.querySelector('.todo-due-date-input');
             input.value = todoItem.querySelector('.todo-text').textContent;
+
+            // 期日を正しい形式でセット
+            const todo = JSON.parse(todoItem.dataset.todo);
+            dueDateInput.value = toDatetimeLocal(todo.due_date);
+
             input.focus();
         }
 
@@ -354,6 +441,7 @@
         async function saveTodo(id, button) {
             const todoItem = button.closest('.todo-item');
             const input = todoItem.querySelector('.todo-input');
+            const dueDateInput = todoItem.querySelector('.todo-due-date-input');
             const title = input.value.trim();
             
             if (!title) {
@@ -363,7 +451,8 @@
 
             try {
                 const response = await fetch(`${API_URL}${id}/`, getRequestOptions('PATCH', {
-                    title: title
+                    title: title,
+                    due_date: dueDateInput.value || null
                 }));
                 
                 if (!response.ok) {
@@ -381,6 +470,7 @@
         // 新しいTODOを追加
         async function addTodo() {
             const input = document.getElementById('new-todo');
+            const dueDateInput = document.getElementById('new-due-date');
             const title = input.value.trim();
             
             if (!title) return;
@@ -388,9 +478,11 @@
             try {
                 await fetch(API_URL, getRequestOptions('POST', {
                     title: title,
-                    completed: false
+                    completed: false,
+                    due_date: dueDateInput.value || null
                 }));
                 input.value = '';
+                dueDateInput.value = '';
                 fetchTodos();
             } catch (error) {
                 console.error('Error adding todo:', error);
@@ -421,8 +513,27 @@
             }
         }
 
+        // 期日の初期値を設定（現在時刻）
+        function setInitialDueDate() {
+            try {
+                const now = new Date();
+                const dueDateInput = document.getElementById('new-due-date');
+                if (dueDateInput) {
+                    now.setHours(9, 0, 0, 0)
+                    dueDateInput.value = now.toISOString().slice(0, 16);
+                }
+            } catch (error) {
+                console.error('期日の初期値設定でエラーが発生しました:', error);
+            }
+        }
+
         // 初期表示
-        fetchTodos();
+        try {
+            fetchTodos();
+            setInitialDueDate();
+        } catch (error) {
+            console.error('初期化でエラーが発生しました:', error);
+        }
     </script>
 </body>
 </html> 
