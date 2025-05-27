@@ -26,6 +26,7 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media
+staticfiles/
 
 # Virtual Environment
 venv/
@@ -42,4 +43,9 @@ ENV/
 Thumbs.db
 
 # Environment Variables
-.env 
+.env
+.env.*
+!.env.example
+
+# Heroku
+.heroku/ 
