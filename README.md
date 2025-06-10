@@ -142,10 +142,10 @@ User.objects.create_user(username='username', password='password', email='email@
 - ログイン: `/login/`
 - ログアウト: `/logout/`
 
-## 注意事項
+<!-- ## 注意事項
 
 - 本番環境では必ず`DEBUG=False`を設定
 - 本番環境では新しい`SECRET_KEY`を生成して使用（Djangoの`get_random_secret_key()`を使用）
 - 本番環境では`ALLOWED_HOSTS`を適切に設定
 - 環境変数は`.env`ファイルで管理（Gitにコミットしない）
-- シークレットキーは絶対にGitにコミットしない 
+- シークレットキーは絶対にGitにコミットしない -->
